@@ -1,12 +1,12 @@
 {
-  "name": "小小探险家 · 三年级闯关",
-  "short_name": "小小探险家",
-  "start_url": "./index.html",
+  "name": "Scratch坐标角度探险",
+  "short_name": "坐标角度探险",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#fdf8ee",
-  "theme_color": "#fdf8ee",
+  "background_color": "#FFF7E8",
+  "theme_color": "#FFF7E8",
   "lang": "zh-CN",
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },

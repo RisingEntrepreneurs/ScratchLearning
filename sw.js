@@ -1,47 +1,38 @@
-/* =====================================================================
-   小小探险家 · 离线缓存脚本（Service Worker）
-   作用：第一次联网打开时，把游戏所需的全部文件存进手机；
-        之后断网也能从缓存直接打开。
-   更新方法：修改了 index.html 等文件后，把下面的版本号 +1 再上传，
-            孩子下次联网打开时会自动换成新版本。
-   ===================================================================== */
-const VERSION = 'xxtxj-v1';
-const FILES = [
-  './',
-  './index.html',
-  './manifest.webmanifest',
-  './apple-touch-icon.png',
-  './icon-192.png',
-  './icon-512.png'
-];
+/* Scratch坐标角度探险 · 离线缓存（Service Worker）
+   更新题目后，把 VERSION 加 1（scratch-v1 → scratch-v2），孩子下次联网打开就会换成新版本。
+   放在独立仓库的根目录，和 index.html 在同一层。 */
+const VERSION = 'scratch-v1';
+const FILES = ['./', './index.html', './manifest.webmanifest',
+               './apple-touch-icon.png', './icon-192.png', './icon-512.png'];
 
-// 安装：把所有文件存进缓存
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
 });
 
-// 激活：删除旧版本缓存
 self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== VERSION).map(k => caches.delete(k))))
-      .then(() => self.clients.claim())
-  );
+  // 只清理本游戏自己的旧缓存（以 scratch- 开头），不动同一网站上其他游戏的缓存
+  e.waitUntil(caches.keys().then(keys => Promise.all(
+    keys.filter(k => k.startsWith('scratch-') && k !== VERSION).map(k => caches.delete(k))
+  )).then(() => self.clients.claim()));
 });
 
-// 请求：优先用缓存（离线可用），同时在有网时悄悄更新缓存
 self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
-  e.respondWith(
-    caches.open(VERSION).then(cache =>
-      cache.match(e.request, { ignoreSearch: true }).then(hit => {
-        const net = fetch(e.request).then(res => {
-          if (res && res.ok) cache.put(e.request, res.clone());
-          return res;
-        }).catch(() => null);
-        if (hit) return hit;
-        return net.then(res => res || cache.match('./index.html'));
-      })
-    )
-  );
+  const req = e.request;
+  if (req.method !== 'GET') return;
+  // 网页本身：优先联网取最新版；github.io 在国内有时很慢，所以超过 3 秒或离线就直接用缓存
+  if (req.mode === 'navigate') {
+    e.respondWith((async () => {
+      const cached = await caches.match('./index.html', {cacheName: VERSION});
+      const net = fetch(req).then(r => {
+        if (r.ok) { const copy = r.clone(); caches.open(VERSION).then(c => c.put('./index.html', copy)); }
+        return r;
+      });
+      if (!cached) return net;
+      const timeout = new Promise(res => setTimeout(() => res(cached), 3000));
+      return Promise.race([net.catch(() => cached), timeout]);
+    })());
+    return;
+  }
+  // 图标等静态文件：先用缓存，没有再联网
+  e.respondWith(caches.match(req, {cacheName: VERSION}).then(hit => hit || fetch(req)));
 });
