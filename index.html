@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<!-- iPhone 竖屏适配：禁止缩放、适配刘海屏安全区 -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<meta name="apple-mobile-web-app-title" content="小小探险家">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#fdf8ee">
+<!-- 离线网页 App：应用清单 + 桌面图标 -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>小小探险家 · 三年级闯关</title>
+<style>
+/* ========== 1. 基础样式：柔和护眼配色 + 大字号 + 大按钮 ========== */
+:root{
+  --bg:#fdf8ee;        /* 米黄护眼底色 */
+  --card:#ffffff;
+  --ink:#4a4036;       /* 柔和深棕文字 */
+  --sub:#8a7d70;
+  --math:#7fb6e3;      /* 数学秘境：柔蓝 */
+  --chn:#8fcb98;       /* 语文森林：柔绿 */
+  --eng:#f2b27f;       /* 英语海岛：柔橙 */
+  --main:#7fb6e3;      /* 当前科目主色（进入科目后切换） */
+  --ok:#6cc08b;
+  --no:#f09a8a;
+  --gold:#f5c542;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{touch-action:manipulation;-webkit-text-size-adjust:100%}
+body{
+  font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--ink);font-size:18px;line-height:1.6;
+  min-height:100vh;min-height:100dvh;
+  -webkit-user-select:none;user-select:none;
+}
+input{-webkit-user-select:text;user-select:text}
+button{font-family:inherit;color:inherit;border:none;background:none;cursor:pointer}
+
+/* 顶部栏：首页按钮 + 标题 + 音效开关 */
+#top{
+  position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
+  padding:calc(env(safe-area-inset-top) + 8px) 12px 8px;background:rgba(253,248,238,.95);
+  border-bottom:2px solid #f1e8d6;
+}
+#top .tb{width:48px;height:48px;border-radius:14px;background:#fff;font-size:24px;box-shadow:0 2px 0 #eadfca}
+#top .tb.hid{visibility:hidden}
+#ttl{font-size:20px;font-weight:700;text-align:center;flex:1;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#main{padding:14px 16px calc(env(safe-area-inset-bottom) + 24px);max-width:560px;margin:0 auto}
+
+/* 通用按钮：高度≥56px，方便孩子点击 */
+.btn{
+  display:block;width:100%;min-height:58px;border-radius:18px;font-size:21px;font-weight:700;
+  background:var(--main);color:#fff;box-shadow:0 4px 0 rgba(0,0,0,.12);margin:12px 0;padding:10px 14px;
+}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.12)}
+.btn.lite{background:#fff;color:var(--ink);box-shadow:0 4px 0 #eadfca}
+.btn.gold{background:var(--gold);color:#6b4d00}
+.row{display:flex;gap:10px}.row .btn{flex:1}
+.card{background:var(--card);border-radius:22px;padding:16px;box-shadow:0 3px 0 #eee3cf;margin:12px 0}
+.center{text-align:center}
+.muted{color:var(--sub);font-size:16px}
+h2{font-size:24px;margin:6px 0 4px}
+
+/* ========== 2. 首页 ========== */
+.hero{text-align:center;padding:16px 0 6px}
+.hero .big{font-size:30px;font-weight:800;letter-spacing:2px}
+.hero .roles{font-size:48px;margin:12px 0;letter-spacing:6px}
+
+/* ========== 3. 角色选择 ========== */
+.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+.rcard{background:#fff;border-radius:20px;padding:14px 6px;text-align:center;border:4px solid transparent;box-shadow:0 3px 0 #eee3cf}
+.rcard .e{font-size:58px;line-height:1.2}
+.rcard .n{font-size:18px;font-weight:700}
+.rcard.on{border-color:var(--gold);background:#fffaf0}
+.name-in{width:100%;height:56px;border-radius:16px;border:3px solid #eadfca;font-size:20px;padding:0 14px;background:#fff;color:var(--ink)}
+
+/* ========== 4. 科目卡片 ========== */
+.scard{display:flex;align-items:center;gap:14px;width:100%;text-align:left;border-radius:22px;padding:16px;margin:14px 0;color:#fff;box-shadow:0 5px 0 rgba(0,0,0,.12)}
+.scard .i{font-size:46px}
+.scard .t{font-size:23px;font-weight:800}
+.scard .p{font-size:16px;opacity:.95}
+
+/* ========== 5. 冒险地图（站点列表） ========== */
+.stat{display:flex;justify-content:space-around;text-align:center;font-size:16px}
+.stat b{display:block;font-size:22px}
+.tier{margin:18px 0 6px;font-weight:800;font-size:18px;color:var(--sub)}
+.station{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#fff;border-radius:20px;padding:12px 14px;margin:10px 0;box-shadow:0 3px 0 #eee3cf;border:3px solid transparent}
+.station .num{width:50px;height:50px;border-radius:50%;background:var(--main);color:#fff;font-size:22px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none}
+.station .nm{font-size:19px;font-weight:700}
+.station .ds{font-size:15px;color:var(--sub)}
+.station .rt{margin-left:auto;font-size:26px;flex:none}
+.station.lock{opacity:.55}
+.station.lock .num{background:#c9c0b4}
+.station.next{border-color:var(--gold)}
+.mini{display:flex;gap:8px;flex-wrap:wrap}
+.mini .btn{flex:1;min-width:30%;font-size:17px;min-height:50px;margin:6px 0}
+
+/* ========== 6. 答题界面 ========== */
+.qhead{display:flex;justify-content:space-between;font-size:16px;color:var(--sub);font-weight:700}
+.bar{height:12px;border-radius:8px;background:#efe6d5;margin:8px 0 10px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--main);border-radius:8px;transition:width .4s}
+.guide{display:flex;align-items:center;gap:10px;margin:4px 0}
+.ava{font-size:46px;line-height:1}
+.bubble{background:#fff;border-radius:16px;padding:8px 12px;font-size:16px;box-shadow:0 2px 0 #eee3cf;position:relative}
+.qcard{background:#fff;border-radius:22px;padding:18px 16px;box-shadow:0 3px 0 #eee3cf;margin:10px 0}
+.qtext{font-size:22px;font-weight:700;line-height:1.7}
+.qtag{display:inline-block;font-size:14px;background:#f4eddf;color:var(--sub);border-radius:10px;padding:1px 10px;margin-bottom:6px}
+.passage{background:#fbf6ea;border-radius:14px;padding:10px 12px;font-size:18px;line-height:1.8;margin-bottom:10px;font-weight:400}
+.opt{display:block;width:100%;min-height:60px;background:#fff;border:3px solid #eadfca;border-radius:18px;font-size:21px;font-weight:600;margin:10px 0;padding:10px 14px;text-align:center;box-shadow:0 3px 0 #eadfca}
+.opt:active{background:#fff8e6}
+.opt.bad{opacity:.4;text-decoration:line-through}
+.opt .emo{font-size:34px}
+/* 分数显示：上下结构 */
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.05;margin:0 3px;font-size:.9em}
+.fr b:first-child{border-bottom:2px solid currentColor;padding:0 3px}
+.fr b{font-weight:700}
+/* 竖式显示 */
+.vt{font-family:"Menlo","Courier New",monospace;font-size:30px;font-weight:700;width:150px;margin:8px auto 0;text-align:right;letter-spacing:4px;line-height:1.35}
+.vt .op{float:left;letter-spacing:0}
+.vt .ln{border-top:3px solid var(--ink);margin:2px 0}
+.vt .qm{color:var(--main)}
+/* 数字键盘（不调用系统键盘，孩子操作更简单） */
+.ansbox{height:64px;border-radius:18px;background:#fff;border:3px dashed var(--main);font-size:32px;font-weight:800;display:flex;align-items:center;justify-content:center;letter-spacing:3px}
+.ansbox .ph{font-size:17px;color:#b6aa9b;letter-spacing:0;font-weight:400}
+.unit{font-size:20px;margin-left:6px;color:var(--sub)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
+.pad button{height:60px;border-radius:16px;background:#fff;font-size:28px;font-weight:700;box-shadow:0 3px 0 #eadfca}
+.pad button:active{transform:translateY(2px);box-shadow:none}
+
+/* ========== 7. 弹窗（剧情/反馈/徽章/海报） ========== */
+.modal{position:fixed;inset:0;background:rgba(74,64,54,.45);z-index:50;display:flex;align-items:center;justify-content:center;padding:18px}
+.modal.hidden{display:none}
+.mbox{background:#fffdf7;border-radius:26px;padding:20px 18px;width:100%;max-width:420px;max-height:88vh;overflow:auto;text-align:center;animation:pop .25s ease-out}
+.mbox .me{font-size:72px;line-height:1.2}
+.mbox .mt{font-size:24px;font-weight:800;margin:4px 0}
+.mbox .mx{font-size:18px;text-align:left;line-height:1.75;margin:8px 0}
+.hint{background:#fff6dc;border-radius:16px;padding:10px 12px;text-align:left;font-size:18px;margin:10px 0}
+.reveal{background:#eaf6ee;border-radius:16px;padding:10px 12px;text-align:left;font-size:18px;margin:10px 0}
+.story{background:#fff;border-radius:18px;padding:12px 14px;text-align:left;font-size:19px;line-height:1.8;box-shadow:inset 0 0 0 3px #f3ead8}
+.gain{font-size:24px;font-weight:800;color:#d49a00}
+
+/* 徽章 */
+.bgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0}
+.badge{background:#fff;border-radius:18px;padding:10px 4px;text-align:center;box-shadow:0 3px 0 #eee3cf}
+.badge .bi{font-size:40px;line-height:1.2;width:62px;height:62px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,#fff6d6,#f7dc8a)}
+.badge .bn{font-size:14px;font-weight:700;margin-top:4px}
+.badge.off .bi{background:#ece6dc;filter:grayscale(1);opacity:.5}
+.badge.off .bn{color:#b6aa9b}
+
+/* 错题本 */
+.wrong{background:#fff;border-radius:18px;padding:12px 14px;margin:10px 0;box-shadow:0 3px 0 #eee3cf;font-size:17px}
+.wrong .wq{font-weight:700;font-size:19px;margin:4px 0}
+.wrong .wy{color:#d0705e}.wrong .wa{color:#3f9a62}
+.wrong .we{background:#fbf6ea;border-radius:12px;padding:8px 10px;margin-top:6px}
+
+/* 奖状图片 */
+#certImg{width:100%;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.12);display:block;-webkit-touch-callout:default}
+
+/* ========== 8. 适度动画（开心跳跃 / 轻微摇头） ========== */
+@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes hop{0%,100%{transform:translateY(0)}35%{transform:translateY(-18px)}60%{transform:translateY(0)}80%{transform:translateY(-6px)}}
+@keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
+.hop{display:inline-block;animation:hop .9s ease-in-out 1}
+.shake{display:inline-block;animation:shake .5s ease-in-out 1}
+@media (prefers-reduced-motion:reduce){.hop,.shake,.mbox{animation:none}}
+
+/* ========== 9. 打印：只打印奖状 ========== */
+@media print{
+  @page{margin:8mm}
+  body{background:#fff}
+  body *{visibility:hidden}
+  #certImg,#certImg *{visibility:visible}
+  #certImg{position:absolute;left:0;top:0;width:100%;box-shadow:none;border-radius:0}
+}
+</style>
+</head>
+<body>
+
+<!-- 顶部栏 -->
+<div id="top">
+  <button class="tb" id="homeBtn" onclick="tapHome()" aria-label="首页">🏠</button>
+  <div id="ttl">小小探险家</div>
+  <button class="tb" id="sndBtn" onclick="toggleSound()" aria-label="音效开关">🔊</button>
+</div>
+<!-- 主内容区：所有页面由 JS 渲染到这里 -->
+<div id="main"></div>
+<!-- 通用弹窗 -->
+<div id="modal" class="modal hidden"><div class="mbox" id="mbox"></div></div>
+
+<script>
+/* =====================================================================
+   A. 角色设定
+   ===================================================================== */
+const ROLES = {
+  rabbit:  {e:'🐰', n:'小兔跳跳'},
+  fox:     {e:'🦊', n:'小狐灵灵'},
+  squirrel:{e:'🐿️', n:'小松鼠果果'},
+  owl:     {e:'🦉', n:'猫头鹰博博'}
+};
+const CHEER_OK = ['太棒啦！','答对了，真厉害！','你是聪明的小探险家！','完全正确！','好样的，继续前进！'];
+const CHEER_NO = ['别着急，我们再想一想～','没关系，错了也是在进步！','差一点点，加油哦！','慢慢来，我陪着你！'];
+const TIERS = ['🌱 基础巩固关','🌿 进阶变式关','🌳 拔高拓展关'];
+const PASS_STAR = 3, PASS_FRAG = 4;   // 过关条件：本站星星≥3 且 碎片≥4
+
+/* =====================================================================
+   B. 题库
+   题目字段说明：
+   q  题干；p 阅读材料（可选）
+   o  选项数组；a 正确选项下标（选择题） / 正确答案字符串（t:'i' 填数题）
+   t  题型：缺省=选择题，'i'=数字键盘填空
+   v  竖式 [上行, 运算符, 下行]（可选）；u 单位（可选）
+   ns 为 true 时不打乱选项顺序（如 >、<、=）
+   h  答错时的提示（只引导思路，不直接给答案）
+   e  完整解析（错题本、或连续答错 3 次后显示）
+   分数写法：[1/4] 会显示为上下结构的“四分之一”
+   ===================================================================== */
+const SUBJECTS = {
+
+/* --------------------------- 数学秘境（苏教版三上） --------------------------- */
+math:{
+  name:'数学秘境', icon:'🔢', color:'#7fb6e3', place:'数学秘境',
+  intro:'数学秘境的大门打开啦！传说秘境深处藏着闪闪发光的“智慧宝石”。只要解开 9 个站点的数学谜题，就能找到它。{R}，我们出发吧！',
+  ending:'哇！你登上了智慧山顶，智慧宝石发出了耀眼的光芒！数学秘境的守护者为你颁发了全部徽章！',
+  stations:[
+  {name:'口算小溪', tier:0, badge:['💧','口算小达人'], desc:'两、三位数乘一位数口算与估算',
+   story:'小溪上漂着一片片数字荷叶，算对了才能踩着荷叶过河哦！',
+   qs:[
+    {t:'i', q:'口算：20 × 4 =', a:'80', h:'20 是 2 个十，2 个十乘 4 是几个十呢？', e:'20 × 4：2 个十 × 4 = 8 个十，就是 80。'},
+    {t:'i', q:'口算：300 × 3 =', a:'900', h:'300 是 3 个百，3 个百乘 3 是几个百？', e:'300 × 3：3 个百 × 3 = 9 个百，就是 900。'},
+    {t:'i', q:'口算：12 × 3 =', a:'36', h:'把 12 分成 10 和 2，分别乘 3，再合起来。', e:'10 × 3 = 30，2 × 3 = 6，30 + 6 = 36。'},
+    {t:'i', q:'口算：0 × 56 =', a:'0', h:'想一想：0 和任何数相乘，结果是多少？', e:'0 和任何数相乘都得 0，所以 0 × 56 = 0。'},
+    {q:'估算：49 × 5 的积大约是多少？', o:['大约 200','大约 250','大约 300'], a:1, h:'把 49 看作和它最接近的整十数，再乘 5。', e:'49 接近 50，50 × 5 = 250，所以积大约是 250。'}
+   ]},
+  {name:'竖式石桥', tier:0, badge:['🌉','竖式小能手'], desc:'两、三位数乘一位数笔算',
+   story:'前面是一座古老的石桥，每块桥石上都刻着一道竖式。算准了，石桥就会亮起来！',
+   qs:[
+    {t:'i', q:'用竖式计算：23 × 3 =', v:['23','×','3'], a:'69', h:'从个位乘起：先算 3 × 3，再算 2 × 3。', e:'个位 3 × 3 = 9，十位 2 × 3 = 6，所以 23 × 3 = 69。'},
+    {t:'i', q:'用竖式计算：46 × 2 =', v:['46','×','2'], a:'92', h:'个位 6 × 2 满十了，要向十位进 1，别忘了加上进上来的数。', e:'6 × 2 = 12，写 2 进 1；4 × 2 = 8，8 + 1 = 9，所以等于 92。'},
+    {t:'i', q:'用竖式计算：125 × 4 =', v:['125','×','4'], a:'500', h:'每一位都可能要进位，一位一位慢慢算。', e:'5 × 4 = 20 写 0 进 2；2 × 4 = 8，8 + 2 = 10 写 0 进 1；1 × 4 = 4，4 + 1 = 5。结果 500。'},
+    {t:'i', q:'用竖式计算：108 × 5 =', v:['108','×','5'], a:'540', h:'十位是 0，0 乘 5 得 0，但要记得加上个位进上来的数。', e:'8 × 5 = 40 写 0 进 4；0 × 5 = 0，0 + 4 = 4；1 × 5 = 5。结果 540。'},
+    {t:'i', q:'用竖式计算：250 × 4 =', v:['250','×','4'], a:'1000', h:'可以先算 25 × 4，再在积的末尾添上 0。', e:'25 × 4 = 100，250 末尾有 1 个 0，积的末尾也添 1 个 0，得 1000。'}
+   ]},
+  {name:'称重小屋', tier:0, badge:['⚖️','称重小专家'], desc:'千克和克',
+   story:'小屋里住着一位松鼠店长，她请你帮忙称一称、换一换货物的重量。',
+   qs:[
+    {t:'i', q:'1 千克 = (  ) 克', u:'克', a:'1000', h:'回忆一下：千克和克之间的进率是多少？', e:'1 千克 = 1000 克。'},
+    {q:'一个鸡蛋大约重 50（  ）。', o:['克','千克'], a:0, ns:true, h:'掂一掂一个鸡蛋，它是轻还是重？比较轻的物品常用什么单位？', e:'一个鸡蛋很轻，大约重 50 克。用千克就太重了。'},
+    {t:'i', q:'3000 克 = (  ) 千克', u:'千克', a:'3', h:'每 1000 克是 1 千克，3000 里面有几个 1000？', e:'3000 克里有 3 个 1000 克，就是 3 千克。'},
+    {q:'1 千克棉花和 1 千克铁比，哪个重？', o:['铁重','棉花重','一样重'], a:2, h:'别被“铁”迷惑啦，仔细看看它们各是多少千克。', e:'都是 1 千克，所以一样重。'},
+    {t:'i', q:'2 千克 500 克 = (  ) 克', u:'克', a:'2500', h:'先把 2 千克换成克，再加上 500 克。', e:'2 千克 = 2000 克，2000 + 500 = 2500 克。'}
+   ]},
+  {name:'围栏草原', tier:1, badge:['🌾','周长小工匠'], desc:'长方形和正方形的周长',
+   story:'草原上的小羊想要新围栏！算出周长，才知道要准备多长的篱笆。',
+   qs:[
+    {t:'i', q:'一个长方形长 8 厘米，宽 5 厘米，它的周长是多少厘米？', u:'厘米', a:'26', h:'长方形的周长 =（长 + 宽）× 2。', e:'(8 + 5) × 2 = 13 × 2 = 26（厘米）。'},
+    {t:'i', q:'一个正方形边长 6 分米，它的周长是多少分米？', u:'分米', a:'24', h:'正方形有 4 条一样长的边。', e:'正方形周长 = 边长 × 4，6 × 4 = 24（分米）。'},
+    {t:'i', q:'用一根 20 厘米长的铁丝正好围成一个正方形，正方形的边长是多少厘米？', u:'厘米', a:'5', h:'铁丝的长度就是正方形的周长，周长平均分给 4 条边。', e:'边长 = 周长 ÷ 4，20 ÷ 4 = 5（厘米）。'},
+    {t:'i', q:'一个长方形花坛周长 30 米，长 10 米，宽是多少米？', u:'米', a:'5', h:'周长的一半是“一条长 + 一条宽”。', e:'30 ÷ 2 = 15（米），15 − 10 = 5（米），宽是 5 米。'},
+    {t:'i', q:'把两个边长 3 厘米的正方形拼成一个长方形，这个长方形的周长是多少厘米？', u:'厘米', a:'18', h:'画一画：拼成后长方形的长和宽各是多少？', e:'拼成的长方形长 3 + 3 = 6 厘米，宽 3 厘米，周长 (6 + 3) × 2 = 18（厘米）。'}
+   ]},
+  {name:'分果山洞', tier:1, badge:['🍎','除法小管家'], desc:'两、三位数除以一位数',
+   story:'山洞里的小猴们收获了好多果子，请你帮忙平均分一分！',
+   qs:[
+    {t:'i', q:'口算：60 ÷ 3 =', a:'20', h:'60 是 6 个十，6 个十平均分成 3 份，每份是几个十？', e:'6 个十 ÷ 3 = 2 个十，就是 20。'},
+    {t:'i', q:'口算：84 ÷ 4 =', a:'21', h:'把 84 分成 80 和 4，分别除以 4。', e:'80 ÷ 4 = 20，4 ÷ 4 = 1，20 + 1 = 21。'},
+    {t:'i', q:'用竖式计算：96 ÷ 8 =', a:'12', h:'从最高位除起：先用 9 个十除以 8，余下的和个位合起来继续除。', e:'9 ÷ 8 商 1 余 1，余下的 1 个十和 6 合成 16，16 ÷ 8 = 2，商是 12。'},
+    {t:'i', q:'用竖式计算：735 ÷ 7 =', a:'105', h:'百位 7 ÷ 7 后，十位上的 3 不够 7 除，商的十位要写几？', e:'7 ÷ 7 商 1；3 不够除，十位商 0；35 ÷ 7 = 5。所以商是 105。'},
+    {t:'i', q:'50 ÷ 6 = 8 ……（  ），余数是几？', a:'2', h:'先算 6 × 8 是多少，再看 50 还剩多少。', e:'6 × 8 = 48，50 − 48 = 2，余数是 2（余数要比除数 6 小）。'}
+   ]},
+  {name:'倍数树林', tier:1, badge:['🌲','倍数小侦探'], desc:'倍的认识与倍数问题',
+   story:'树林里住着一群爱比较的小动物，用“倍”的知识帮它们解决难题吧！',
+   qs:[
+    {t:'i', q:'白兔有 4 只，灰兔的只数是白兔的 3 倍。灰兔有几只？', u:'只', a:'12', h:'“3 倍”就是 3 个 4 那么多。', e:'求一个数的几倍是多少，用乘法：4 × 3 = 12（只）。'},
+    {t:'i', q:'18 是 6 的几倍？', u:'倍', a:'3', h:'想一想：18 里面有几个 6？', e:'求一个数是另一个数的几倍，用除法：18 ÷ 6 = 3。'},
+    {t:'i', q:'一支铅笔 2 元，一本笔记本的价钱是铅笔的 4 倍。笔记本多少元？', u:'元', a:'8', h:'笔记本的价钱是 4 个 2 元。', e:'2 × 4 = 8（元）。'},
+    {t:'i', q:'32 里面有几个 8？也就是说 32 是 8 的几倍？', u:'倍', a:'4', h:'用口诀想：几八三十二？', e:'32 ÷ 8 = 4，32 是 8 的 4 倍。'},
+    {t:'i', q:'黄花有 6 朵，红花是黄花的 5 倍。红花比黄花多几朵？', u:'朵', a:'24', h:'分两步：先求红花有几朵，再求多几朵。', e:'红花：6 × 5 = 30（朵）；多：30 − 6 = 24（朵）。'}
+   ]},
+  {name:'分数花园', tier:2, badge:['🌸','分数小园丁'], desc:'分数的初步认识与简单计算',
+   story:'分数花园里的花被平均分成了好几份，看懂分数，花儿才会开放！',
+   qs:[
+    {q:'把一个蛋糕平均分成 4 份，每份是这个蛋糕的几分之几？', o:['[1/4]','[1/2]','[4/1]'], a:0, h:'平均分成几份，分母就是几；取其中 1 份，分子就是 1。', e:'平均分成 4 份，每份是它的 [1/4]。'},
+    {q:'比较大小：[1/3] ○ [1/5]', o:['>','<','='], a:0, ns:true, h:'同一个饼，分的份数越多，每一份会越大还是越小？', e:'分子都是 1，分母越大每份越小。[1/3] 比 [1/5] 大，所以填 >。'},
+    {q:'比较大小：[3/8] ○ [5/8]', o:['>','<','='], a:1, ns:true, h:'分母相同，都是平均分成 8 份，比一比取的份数。', e:'分母相同，分子大的分数大。3 份比 5 份少，所以 [3/8] < [5/8]。'},
+    {q:'计算：[2/9] + [5/9] = ?', o:['[7/9]','[7/18]','[3/9]'], a:0, h:'同分母分数相加，分母不变，分子怎样？', e:'分母不变，分子相加：2 + 5 = 7，结果是 [7/9]。'},
+    {q:'计算：1 − [3/7] = ?', o:['[4/7]','[3/7]','[2/7]'], a:0, h:'把 1 看作 [7/7]，再去减。', e:'1 = [7/7]，[7/7] − [3/7] = [4/7]。'}
+   ]},
+  {name:'魔镜湖', tier:2, badge:['🪞','图形魔法师'], desc:'平移、旋转、轴对称与观察物体',
+   story:'湖面像一面魔镜，会映出各种运动和图形。看穿魔镜的秘密吧！',
+   qs:[
+    {q:'电梯上上下下地运动，属于哪种现象？', o:['平移','旋转'], a:0, ns:true, h:'电梯运动时是沿着直线移动，还是绕着一个点转圈？', e:'电梯沿直线上下移动，方向不变，是平移。'},
+    {q:'风车不停地转动，属于哪种现象？', o:['平移','旋转'], a:1, ns:true, h:'风车的叶片是绕着什么在动？', e:'风车绕着中心点转动，是旋转。'},
+    {q:'下面哪个图形一定是轴对称图形？', o:['长方形','平行四边形','三角形'], a:0, h:'想象沿一条直线对折，哪个图形两边一定能完全重合？', e:'长方形沿长或宽的中线对折能完全重合，一定是轴对称图形；一般的平行四边形、三角形不一定。'},
+    {q:'下面哪个字母是轴对称图形？', o:['A','F','J'], a:0, h:'在每个字母中间画一条竖线，看左右两边是不是一样。', e:'A 沿中间的竖线对折，左右能完全重合，是轴对称图形。'},
+    {q:'从正面看一个正方体，看到的形状是什么？', o:['正方形','长方形','三角形'], a:0, h:'正方体的每个面都是什么形状的？', e:'正方体的 6 个面都是相同的正方形，从正面看到的是正方形。'}
+   ]},
+  {name:'智慧山顶', tier:2, badge:['💎','智慧宝石'], desc:'解决问题的策略与综合应用',
+   story:'最后一站！智慧宝石就在山顶上。用上你学过的所有本领，解开终极谜题！',
+   qs:[
+    {t:'i', q:'小明家养了 8 只鸡，鸭的只数是鸡的 3 倍。鸡和鸭一共有多少只？', u:'只', a:'32', h:'先算鸭有几只，再把鸡和鸭合起来。', e:'鸭：8 × 3 = 24（只）；一共：24 + 8 = 32（只）。'},
+    {t:'i', q:'一套故事书有 3 本，每本 28 元。买 2 套需要多少元？', u:'元', a:'168', h:'可以先求一套多少元，再求 2 套多少元。', e:'一套：28 × 3 = 84（元）；两套：84 × 2 = 168（元）。'},
+    {t:'i', q:'小猴第 1 天摘了 12 个桃，以后每天都比前一天多摘 3 个。第 4 天摘了多少个？', u:'个', a:'21', h:'从条件想起，一天一天列出来：第 2 天、第 3 天……', e:'第 1 天 12 个，第 2 天 15 个，第 3 天 18 个，第 4 天 21 个。'},
+    {t:'i', q:'从 1 楼走到 3 楼要走 40 级台阶。照这样，从 1 楼走到 5 楼要走多少级？', u:'级', a:'80', h:'从 1 楼到 3 楼其实只爬了几层楼梯？', e:'1 楼到 3 楼爬 2 层，每层 40 ÷ 2 = 20 级；1 楼到 5 楼爬 4 层，20 × 4 = 80（级）。'},
+    {t:'i', q:'一根绳子对折、再对折后长 5 米。这根绳子原来长多少米？', u:'米', a:'20', h:'对折一次变成几段？再对折一次呢？', e:'对折再对折，绳子平均分成了 4 段，每段 5 米，原来长 5 × 4 = 20（米）。'}
+   ]}
+  ]
+},
+
+/* --------------------------- 语文森林（人教统编版三上） --------------------------- */
+chinese:{
+  name:'语文森林', icon:'📖', color:'#8fcb98', place:'语文森林',
+  intro:'语文森林里，每一棵树上都结着汉字果子。森林中心有一本会说话的“魔法书”，它在等待一位爱读书的小探险家。{R}，一起去找它吧！',
+  ending:'你走到了森林之心，魔法书翻开了，书页上写着你的名字！语文森林的小精灵们为你送上了全部徽章！',
+  stations:[
+  {name:'识字小径', tier:0, badge:['🍃','识字小明星'], desc:'课内生字读音',
+   story:'小径两旁的树叶上写着生字，读对它们，树叶就会为你让路！',
+   qs:[
+    {q:'“喜鹊”的“鹊”正确读音是？', o:['què','qiè','quē'], a:0, h:'这个字是第四声，韵母是 üe（和 j、q、x 相拼去掉两点）。', e:'“鹊”读 què，第四声。'},
+    {q:'《大青树下的小学》中“坪坝”的“坝”读音是？', o:['bà','bèi','pà'], a:0, h:'声母是 b，韵母是 a，第四声。', e:'“坝”读 bà，“坪坝”指山区里的平地。'},
+    {q:'《铺满金色巴掌的水泥道》中“铺满”的“铺”读音是？', o:['pū','pù'], a:0, ns:true, h:'这里的“铺”是一个动作（把东西展开放平），读第几声？', e:'表示动作“铺开”时读 pū；“店铺”的“铺”才读 pù。'},
+    {q:'“蟋蟀”的正确读音是？', o:['xī shuài','xí shuài','xī suài'], a:0, h:'注意“蟀”是翘舌音，“蟋”是第一声。', e:'“蟋蟀”读 xī shuài，“蟀”是翘舌音 sh。'},
+    {q:'《司马光》中“一儿登瓮”的“瓮”读音是？', o:['wèng','wēng','gōng'], a:0, h:'它是一个第四声的字，声母是 w。', e:'“瓮”读 wèng，是一种口小肚大的陶制容器。'}
+   ]},
+  {name:'辨字蘑菇屋', tier:0, badge:['🍄','辨字小精灵'], desc:'形近字、同音字辨析',
+   story:'蘑菇屋里的字宝宝长得很像，常常被认错。请你帮它们找到正确的位置！',
+   qs:[
+    {q:'选字填空：一（  ）大树', o:['棵','颗'], a:0, ns:true, h:'看偏旁：木字旁和什么有关？页字旁呢？', e:'“棵”是木字旁，用于树木植物，如一棵树；“颗”用于小而圆的东西，如一颗星。'},
+    {q:'选字填空：眼（  ）', o:['睛','晴','情'], a:0, h:'和眼睛有关的字，用什么偏旁？', e:'眼睛要用“目”字旁的“睛”；“晴”是日字旁，与太阳有关；“情”是竖心旁，与心情有关。'},
+    {q:'选字填空：（  ）望', o:['盼','份','纷'], a:0, h:'“盼望”和眼睛看有关，想想哪个字带“目”？', e:'“盼”是目字旁，表示眼巴巴地望，盼望。'},
+    {q:'选字填空：清（  ）的小溪', o:['澈','撤','辙'], a:0, h:'小溪里流的是什么？想想偏旁。', e:'“澈”是三点水，形容水清；“撤”是提手旁，“辙”是车字旁。'},
+    {q:'选字填空：（  ）蓝的天空', o:['蔚','慰','尉'], a:0, h:'这个字有草字头。', e:'“蔚蓝”的“蔚”有草字头；“安慰”的“慰”下面是心。'}
+   ]},
+  {name:'搭配藤桥', tier:0, badge:['🌉','搭配小高手'], desc:'量词、动词、形容词搭配',
+   story:'藤桥的每一节都要搭配得刚刚好，才能稳稳地走过去！',
+   qs:[
+    {q:'选词填空：（  ）帽子', o:['戴','带','穿'], a:0, h:'把东西放在头上、脸上，用哪个字？', e:'帽子是戴在头上的，用“戴”；“带”是随身拿着；“穿”用于衣服鞋子。'},
+    {q:'选词填空：一（  ）小河', o:['条','只','个'], a:0, h:'小河长长的，长条形的东西用什么量词？', e:'长条形的事物用“条”，一条小河、一条路。'},
+    {q:'下面哪个词语搭配不恰当？', o:['金黄的稻谷','飞舞的蝴蝶','飞舞的大树'], a:2, h:'想一想，哪个东西不会飞起来舞动？', e:'大树不会飞舞，“飞舞的大树”搭配不恰当。'},
+    {q:'选词填空：（  ）地打开窗户', o:['轻轻','红红','圆圆'], a:0, h:'“打开”是一个动作，哪个词能形容动作？', e:'“轻轻地打开”形容动作很轻；“红红”“圆圆”是形容样子的。'},
+    {q:'补全 ABB 式词语：绿（  ）', o:['油油','乎乎','腾腾'], a:0, h:'形容草地、禾苗绿得发亮，读一读哪个最顺口？', e:'“绿油油”形容浓绿而润泽，常见搭配；“热乎乎”“热腾腾”形容温度。'}
+   ]},
+  {name:'词语清泉', tier:1, badge:['⛲','词语小博士'], desc:'近义词与反义词',
+   story:'喝一口清泉水，词语就会变出它的“好朋友”和“对头”！',
+   qs:[
+    {q:'“美丽”的近义词是？', o:['漂亮','丑陋','高大'], a:0, h:'近义词意思差不多。哪个词也是夸东西好看？', e:'“美丽”和“漂亮”都形容好看，是近义词；“丑陋”是反义词。'},
+    {q:'“热闹”的反义词是？', o:['冷清','热烈','喧闹'], a:0, h:'反义词意思相反。热闹是人多声音多，相反是什么样？', e:'“热闹”的反义词是“冷清”；“喧闹”和“热闹”意思相近。'},
+    {q:'“仔细”的近义词是？', o:['认真','马虎','粗心'], a:0, h:'做作业不出错，需要什么样的态度？', e:'“仔细”和“认真”意思相近；“马虎”“粗心”是反义词。'},
+    {q:'“富饶”的反义词是？', o:['贫瘠','丰富','美丽'], a:0, h:'富饶是物产多，反过来是什么都很少、土地不肥。', e:'“富饶”的反义词是“贫瘠”；“丰富”意思相近。'},
+    {q:'“飞快”的近义词是？', o:['迅速','缓慢','慢吞吞'], a:0, h:'找一个同样形容“很快”的词。', e:'“飞快”和“迅速”都表示很快；“缓慢”“慢吞吞”意思相反。'}
+   ]},
+  {name:'古诗凉亭', tier:1, badge:['🏮','小小诗人'], desc:'课内古诗六首默写与理解',
+   story:'凉亭里的老爷爷最爱吟诗，他说出上句，你能接出下句吗？',
+   qs:[
+    {q:'《山行》：停车坐爱枫林晚，霜叶红于（  ）。', o:['二月花','三月花','五月花'], a:0, h:'诗人觉得经霜的枫叶比春天早期的花还要红，是农历几月？', e:'原句：停车坐爱枫林晚，霜叶红于二月花。（唐·杜牧）'},
+    {q:'《赠刘景文》：一年好景君须记，最是（  ）时。', o:['橙黄橘绿','桃红柳绿','春暖花开'], a:0, h:'这首诗写的是秋末冬初的景色，那时候什么水果成熟了？', e:'原句：一年好景君须记，最是橙黄橘绿时。（宋·苏轼）'},
+    {q:'《夜书所见》：知有儿童挑促织，（  ）。', o:['夜深篱落一灯明','江上秋风动客情','萧萧梧叶送寒声'], a:0, h:'诗人是怎么知道孩子们在捉蟋蟀的？他远远看见了什么？', e:'原句：知有儿童挑促织，夜深篱落一灯明。（宋·叶绍翁）'},
+    {q:'《望天门山》：两岸青山相对出，（  ）。', o:['孤帆一片日边来','碧水东流至此回','天门中断楚江开'], a:0, h:'这句写的是从远处驶来的一样东西。', e:'原句：两岸青山相对出，孤帆一片日边来。（唐·李白）'},
+    {q:'《饮湖上初晴后雨》：欲把西湖比西子，（  ）。', o:['淡妆浓抹总相宜','山色空蒙雨亦奇','水光潋滟晴方好'], a:0, h:'诗人把西湖比作美女西施，不管怎么打扮都怎样？', e:'原句：欲把西湖比西子，淡妆浓抹总相宜。（宋·苏轼）'}
+   ]},
+  {name:'课文树屋', tier:1, badge:['🏡','课文小书虫'], desc:'课文内容理解',
+   story:'树屋里摆满了课本里的故事，回忆一下，答出问题就能拿到钥匙！',
+   qs:[
+    {q:'《去年的树》中，鸟儿最后对着什么唱起了去年唱过的歌？', o:['灯火','树根','大门'], a:0, h:'树被做成火柴，火柴点燃了什么？', e:'树变成了火柴，火柴点燃了灯火，鸟儿对着灯火唱了去年的歌，信守了承诺。'},
+    {q:'《司马光》中，司马光是怎样救出落水的小伙伴的？', o:['用石头砸破瓮','跑去叫大人','用绳子拉上来'], a:0, h:'回忆课文中“光持石……”这一句。', e:'“光持石击瓮破之”，司马光拿起石头砸破了瓮，水流出来，小伙伴得救了。'},
+    {q:'《总也倒不了的老屋》中，第一个请老屋帮忙的是谁？', o:['小猫','老母鸡','小蜘蛛'], a:0, h:'按顺序回忆：谁需要一个晚上躲避暴风雨？', e:'顺序是：小猫（躲雨过夜）→ 老母鸡（孵小鸡）→ 小蜘蛛（听故事）。'},
+    {q:'《富饶的西沙群岛》中，西沙群岛位于我国哪片海上？', o:['南海','东海','黄海'], a:0, h:'课文开头就告诉我们西沙群岛在哪儿。', e:'西沙群岛是南海上的一群岛屿，是我国的海防前哨。'},
+    {q:'《望洞庭》“白银盘里一青螺”中，“青螺”指的是什么？', o:['君山','田螺','小船'], a:0, h:'白银盘比喻洞庭湖面，湖中有一座青翠的什么？', e:'“白银盘”比喻洞庭湖，“青螺”比喻湖中的君山。'}
+   ]},
+  {name:'文言石碑', tier:2, badge:['🗿','文言小学士'], desc:'文言文《司马光》阅读',
+   p:'群儿戏于庭，一儿登瓮，足跌没水中。众皆弃去，光持石击瓮破之，水迸，儿得活。',
+   story:'一块古老的石碑上刻着《司马光》的故事，读懂它，石碑就会打开！',
+   qs:[
+    {q:'“群儿戏于庭”中“戏”的意思是？', o:['玩耍','演戏','看戏'], a:0, h:'一群孩子在院子里做什么？', e:'“戏”是玩耍的意思，“群儿戏于庭”就是一群孩子在庭院里玩耍。'},
+    {q:'“众皆弃去”的意思是？', o:['别的孩子都跑掉了','大家都去救人了','大家都哭了'], a:0, h:'“弃去”就是离开。在司马光救人之前，其他孩子怎么做的？', e:'“众皆弃去”是说其他小孩都丢下他跑掉了，和司马光形成对比。'},
+    {q:'“足跌没水中”的“没”在这里读？', o:['mò','méi'], a:0, ns:true, h:'这里的“没”是“淹没、沉下去”的意思。', e:'表示“沉入、淹没”时读 mò。'},
+    {q:'“儿得活”的意思是？', o:['落水的孩子得救了','孩子们继续玩了','司马光回家了'], a:0, h:'瓮被砸破，水流了出来，那个孩子怎么样了？', e:'“儿得活”就是落水的孩子得救了。'},
+    {q:'从故事中可以看出司马光是个怎样的孩子？', o:['沉着冷静、机智勇敢','胆小怕事','调皮捣蛋'], a:0, h:'别人都跑了，他却想出办法救人，这说明什么？', e:'遇到危险不慌张，还想出了砸瓮救人的好办法，说明他沉着冷静、机智勇敢。'}
+   ]},
+  {name:'阅读花海', tier:2, badge:['🌻','阅读小达人'], desc:'课外片段阅读理解（比喻、拟人）',
+   p:'秋天来了，果园里热闹极了。苹果涨红了脸，梨子穿上了金黄的外衣，葡萄一串串挂在架子上，像一颗颗紫色的珍珠。小刺猬背着满身的果子，高高兴兴地回家了。',
+   story:'花海里飘来一段美美的短文，认真读一读，再回答花仙子的问题吧。',
+   qs:[
+    {q:'短文写的是什么季节的景色？', o:['秋天','春天','冬天'], a:0, h:'看看短文的第一句话。', e:'第一句“秋天来了”就点明了季节。'},
+    {q:'“葡萄像一颗颗紫色的珍珠”，把葡萄比作了什么？', o:['珍珠','果园','刺猬'], a:0, h:'找一找“像”字后面的事物。', e:'这是比喻句，“像”后面的“紫色的珍珠”就是比作的事物。'},
+    {q:'“苹果涨红了脸”这样写好在哪里？', o:['把苹果当作人来写，很生动','把苹果比作了珍珠','说明苹果很大很重'], a:0, h:'“涨红了脸”通常是谁会有的样子？', e:'只有人才会“涨红了脸”，把苹果当作人来写，是拟人的写法，写出了苹果成熟变红的样子。'},
+    {q:'小刺猬为什么高高兴兴地回家？', o:['它收获了很多果子','它找到了好朋友','它考了一百分'], a:0, h:'看看小刺猬背上有什么。', e:'小刺猬背着满身的果子，收获满满，所以很高兴。'},
+    {q:'这段话主要写了什么？', o:['秋天果园丰收的景象','小刺猬怎样摘果子','葡萄怎样生长'], a:0, h:'把整段话连起来想一想，写的是一个地方什么样子？', e:'短文写了苹果、梨、葡萄成熟和小刺猬的收获，主要写秋天果园丰收的景象。'}
+   ]},
+  {name:'森林之心', tier:2, badge:['📚','魔法书守护者'], desc:'标点、句子、修辞与词语积累',
+   story:'魔法书就在森林之心！它出了最后几道题，答对就能唤醒它。',
+   qs:[
+    {q:'下面哪个句子的标点用得正确？', o:['你知道秋天在哪里吗？','你知道秋天在哪里吗。','你知道秋天在哪里吗！'], a:0, h:'这句话是在提问，问句末尾用什么标点？', e:'这是问句，句末要用问号“？”。'},
+    {q:'下面哪一句是比喻句？', o:['弯弯的月亮像小船。','月亮慢慢地升起来了。','我好像听见了妈妈的声音。'], a:0, h:'比喻句要把一种事物比作另一种相似的事物，注意“好像”不一定是比喻哦！', e:'“月亮像小船”把月亮比作小船，是比喻句；“我好像听见了”表示猜测，不是比喻。'},
+    {q:'哪个句子写得更具体生动？', o:['小鸟在枝头快乐地唱着歌。','小鸟在唱歌。','有一只鸟。'], a:0, h:'看哪句话告诉了我们“在哪里”和“怎么样”。', e:'加上了地点“在枝头”和样子“快乐地”，句子更具体生动。'},
+    {q:'下面哪个词语不是描写声音的？', o:['绿油油','哗啦啦','叮咚'], a:0, h:'读一读，哪个词是写颜色的？', e:'“哗啦啦”“叮咚”都是拟声词，“绿油油”是写颜色的。'},
+    {q:'“五彩缤纷”这个词形容什么？', o:['颜色多，很好看','声音很大','人很多'], a:0, h:'“五彩”是什么意思？', e:'“五彩缤纷”形容颜色繁多，非常好看。'}
+   ]}
+  ]
+},
+
+/* --------------------------- 英语海岛（人教PEP三上） --------------------------- */
+english:{
+  name:'英语海岛', icon:'🏝️', color:'#f2b27f', place:'英语海岛',
+  intro:'Hello! 欢迎来到英语海岛！岛上的居民只会说英语，听说宝藏洞里藏着一个“金色贝壳”。{R}，用英语和大家交朋友，一起去寻宝吧！',
+  ending:'你打开了宝藏洞，金色贝壳闪闪发光！岛上的朋友们都在为你欢呼：Great job! 英语海岛的全部徽章都是你的啦！',
+  stations:[
+  {name:'Hello 沙滩', tier:0, badge:['👋','Hello 小使者'], desc:'打招呼、自我介绍',
+   story:'沙滩上有一只小海龟向你挥手，用英语和它打个招呼吧！',
+   qs:[
+    {q:'早上见到新朋友，你想打招呼，可以说：', o:['Hello!','Goodbye!','Thank you!'], a:0, h:'打招呼时用“你好”，你还记得英文怎么说吗？', e:'Hello! 意思是“你好！”；Goodbye 是再见，Thank you 是谢谢。'},
+    {q:'别人对你说“Nice to meet you.”，你应该回答：', o:['Nice to meet you, too.','Goodbye.','I\'m a cat.'], a:0, h:'别人说“见到你很高兴”，你也可以说“我也是”。', e:'回答 Nice to meet you, too.（见到你也很高兴。）'},
+    {q:'想知道新朋友叫什么名字，你可以问：', o:['What\'s your name?','How old are you?','What colour is it?'], a:0, h:'name 是“名字”的意思。', e:'What\'s your name? 意思是“你叫什么名字？”'},
+    {q:'“Goodbye!”的意思是：', o:['再见！','你好！','谢谢！'], a:0, h:'这句话通常在什么时候说？分开的时候还是见面的时候？', e:'Goodbye! 是“再见！”，分别时说。'},
+    {q:'你想告诉别人“我是 Sarah”，应该说：', o:['I\'m Sarah.','You\'re Sarah.','She\'s Sarah.'], a:0, h:'“我”的英文是 I。', e:'I\'m = I am，意思是“我是”，所以说 I\'m Sarah.'}
+   ]},
+  {name:'Family 小屋', tier:0, badge:['🏠','Family 小暖心'], desc:'家庭成员',
+   story:'海边的小屋里住着一家人，他们想请你认识每一位家庭成员。',
+   qs:[
+    {q:'“father”的意思是：', o:['爸爸','妈妈','哥哥'], a:0, h:'它是家里的一位男士，和 mother 是一对。', e:'father 意思是“爸爸”。'},
+    {q:'“妈妈”用英语怎么说？', o:['mother','father','sister'], a:0, h:'它和 father 是一对，开头字母是 m。', e:'mother 意思是“妈妈”。'},
+    {q:'“grandmother”的意思是：', o:['奶奶 / 外婆','爷爷 / 外公','姐姐 / 妹妹'], a:0, h:'grand 加上 mother，是妈妈或爸爸的妈妈。', e:'grandmother 是奶奶或外婆；grandfather 是爷爷或外公。'},
+    {q:'你想向朋友介绍你的爸爸，应该说：', o:['This is my father.','This is my mother.','This is my sister.'], a:0, h:'先找出哪个单词是“爸爸”。', e:'This is my father. 意思是“这是我的爸爸。”'},
+    {q:'“sister”的意思是：', o:['姐姐 / 妹妹','哥哥 / 弟弟','叔叔'], a:0, h:'它是家里的女孩子，和 brother 是一对。', e:'sister 是姐姐或妹妹；brother 是哥哥或弟弟。'}
+   ]},
+  {name:'动物码头', tier:0, badge:['🐳','动物小朋友'], desc:'动物单词',
+   story:'码头上来了好多动物乘客！认出它们，它们才肯上船哦。',
+   qs:[
+    {q:'<span class="emo">🐼</span> 这是什么动物？', o:['panda','tiger','monkey'], a:0, h:'它是我们中国的国宝，黑白相间。', e:'🐼 是 panda（熊猫）。'},
+    {q:'<span class="emo">🐶</span> 这是什么动物？', o:['dog','duck','bird'], a:0, h:'它会“汪汪”叫，开头字母是 d，有 3 个字母。', e:'🐶 是 dog（狗）；duck 是鸭子。'},
+    {q:'<span class="emo">🐘</span> 这是什么动物？', o:['elephant','rabbit','bear'], a:0, h:'它有长长的鼻子，是一个比较长的单词。', e:'🐘 是 elephant（大象）。'},
+    {q:'“duck”是哪种动物？', o:['<span class="emo">🦆</span>','<span class="emo">🐷</span>','<span class="emo">🐱</span>'], a:0, h:'它会“嘎嘎”叫，在水里游。', e:'duck 是鸭子 🦆；pig 是猪，cat 是猫。'},
+    {q:'<span class="emo">🐯</span> 这是什么动物？', o:['tiger','lion','cat'], a:0, h:'它是森林之王之一，身上有花纹，开头字母是 t。', e:'🐯 是 tiger（老虎）。'}
+   ]},
+  {name:'彩虹礁', tier:1, badge:['🌈','颜色魔术师'], desc:'颜色与句型 What colour is it?',
+   story:'海面上升起一道彩虹，礁石也变得五颜六色。说出颜色，彩虹桥就会出现！',
+   qs:[
+    {q:'<span class="emo">🍎</span> What colour is it?', o:['It\'s red.','It\'s blue.','It\'s black.'], a:0, h:'苹果通常是什么颜色？红色的英文是 r 开头。', e:'苹果是红色的，It\'s red.'},
+    {q:'<span class="emo">🍌</span> What colour is it?', o:['It\'s yellow.','It\'s green.','It\'s white.'], a:0, h:'成熟的香蕉是什么颜色？', e:'香蕉是黄色的，It\'s yellow.'},
+    {q:'<span class="emo">🍀</span> What colour is it?', o:['It\'s green.','It\'s red.','It\'s pink.'], a:0, h:'小草和叶子是什么颜色？', e:'四叶草是绿色的，It\'s green.'},
+    {q:'“blue”的意思是：', o:['蓝色','红色','黄色'], a:0, h:'天空和大海通常是什么颜色？', e:'blue 是蓝色。'},
+    {q:'<span class="emo">🐼</span> 哪句话描述熊猫是正确的？', o:['It\'s black and white.','It\'s red and yellow.','It\'s green.'], a:0, h:'熊猫身上有哪两种颜色？', e:'熊猫是黑白相间的，It\'s black and white.'}
+   ]},
+  {name:'椰林果园', tier:1, badge:['🥥','植物小园丁'], desc:'植物、水果与 I like…',
+   story:'椰林果园里长满了植物和水果，园丁爷爷想考考你认不认识它们。',
+   qs:[
+    {q:'<span class="emo">🌳</span> 这是：', o:['tree','flower','grass'], a:0, h:'它很高大，有树干和树叶。', e:'🌳 是 tree（树）。'},
+    {q:'<span class="emo">🌸</span> 这是：', o:['flower','tree','apple'], a:0, h:'它很香很美，开头字母是 f。', e:'🌸 是 flower（花）。'},
+    {q:'<span class="emo">🥕</span> 这是：', o:['carrot','potato','banana'], a:0, h:'小兔子最爱吃它，橙色的蔬菜。', e:'🥕 是 carrot（胡萝卜）。'},
+    {q:'“apple”是哪一个？', o:['<span class="emo">🍎</span>','<span class="emo">🍊</span>','<span class="emo">🍇</span>'], a:0, h:'它是红红圆圆的水果，A 开头。', e:'apple 是苹果 🍎；orange 是橙子。'},
+    {q:'“I like apples.”的意思是：', o:['我喜欢苹果。','我有苹果。','这是苹果。'], a:0, h:'like 是什么意思？', e:'like 是“喜欢”，I like apples. 就是“我喜欢苹果”。'}
+   ]},
+  {name:'数字灯塔', tier:1, badge:['🗼','数字小灯塔'], desc:'数字 1–10 与年龄、数量',
+   story:'灯塔的灯坏了，要按对数字密码才能重新点亮它！',
+   qs:[
+    {q:'数字“3”用英语怎么说？', o:['three','two','tree'], a:0, h:'小心！有一个单词是“树”，看清楚拼写。', e:'3 是 three；tree 是树，拼写很像要分清。'},
+    {q:'“eight”是数字几？', o:['8','6','9'], a:0, h:'one, two, three…一直数下去，它在 seven 后面。', e:'eight 是 8。'},
+    {q:'别人问你“How old are you?”，你可以回答：', o:['I\'m nine.','I\'m fine.','I\'m Mike.'], a:0, h:'How old 是问“几岁”，回答里要有数字。', e:'How old are you? 问年龄，回答 I\'m nine.（我九岁。）'},
+    {q:'two + three = ?', o:['five','four','six'], a:0, h:'先把单词变成数字：2 + 3 = ？', e:'2 + 3 = 5，five。'},
+    {q:'<span class="emo">🐦🐦🐦🐦</span> How many birds?', o:['four','three','five'], a:0, h:'数一数一共有几只小鸟。', e:'一共有 4 只小鸟，four。'}
+   ]},
+  {name:'贝壳湾', tier:2, badge:['🐚','火眼金睛'], desc:'单词认读辨析、分类',
+   story:'贝壳湾的贝壳里藏着单词，但有一个混进来的“捣蛋鬼”，把它找出来吧！',
+   qs:[
+    {q:'找出不同类的单词：', o:['dog','red','blue'], a:0, h:'把单词分一分类：哪两个是颜色？', e:'red、blue 是颜色，dog 是动物，所以 dog 不同类。'},
+    {q:'找出不同类的单词：', o:['ten','cat','pig'], a:0, h:'cat、pig 是什么？剩下的那个呢？', e:'cat、pig 是动物，ten 是数字。'},
+    {q:'找出不同类的单词：', o:['apple','mother','father'], a:0, h:'哪两个单词是家庭成员？', e:'mother、father 是家庭成员，apple 是水果。'},
+    {q:'one, two, three, （  ）', o:['four','five','six'], a:0, h:'按顺序数，three 后面是几？', e:'1、2、3 后面是 4，four。'},
+    {q:'选出拼写正确的单词（大象）：', o:['elephant','elefant','elephent'], a:0, h:'大象这个词里有 ph，读 /f/ 的音。', e:'正确拼写是 e-l-e-p-h-a-n-t，elephant。'}
+   ]},
+  {name:'情景小镇', tier:2, badge:['🏘️','交际小达人'], desc:'情景交际选择',
+   story:'小镇上每个人都遇到了小状况，选出最合适的话帮助他们吧！',
+   qs:[
+    {q:'你想把好朋友 Amy 介绍给妈妈，应该说：', o:['Mum, this is my friend Amy.','Mum, I\'m Amy.','Goodbye, Amy.'], a:0, h:'介绍别人时，用“这是……”的句型。', e:'介绍他人用 This is…，Mum, this is my friend Amy.'},
+    {q:'你看到一只没见过的动物，想问“这是什么？”，应该说：', o:['What\'s this?','How are you?','Who\'s she?'], a:0, h:'What 是问“什么”。', e:'What\'s this? 意思是“这是什么？”'},
+    {q:'同学借给你一支铅笔，你应该说：', o:['Thank you.','Hello.','Goodbye.'], a:0, h:'别人帮助了你，要说什么礼貌用语？', e:'接受别人帮助要说 Thank you.（谢谢。）'},
+    {q:'你想告诉别人“我喜欢猫”，应该说：', o:['I like cats.','I\'m a cat.','This is a cat.'], a:0, h:'“喜欢”是哪个单词？', e:'I like cats. 意思是“我喜欢猫”。'},
+    {q:'晚上睡觉前，你对家人说：', o:['Good night.','Good morning.','Nice to meet you.'], a:0, h:'night 是夜晚，morning 是早晨。', e:'睡前说 Good night.（晚安。）'}
+   ]},
+  {name:'宝藏洞', tier:2, badge:['🪙','金色贝壳'], desc:'句型判断与问答',
+   story:'宝藏洞到了！洞口的守门石像会说英语，答对它的问题，金色贝壳就是你的！',
+   qs:[
+    {q:'看图判断：<span class="emo">🐶</span> “It\'s a cat.” 这句话对吗？', o:['✔ 对','✘ 错'], a:1, ns:true, h:'图上是什么动物？cat 是什么？', e:'图上是狗 dog，不是猫 cat，所以句子是错的。'},
+    {q:'判断：问“How old are you?”，回答“I\'m nine.” 对吗？', o:['✔ 对','✘ 错'], a:0, ns:true, h:'How old 问的是什么？nine 是什么？', e:'How old are you? 问年龄，I\'m nine. 回答“九岁”，是对的。'},
+    {q:'选出书写顺序正确的句子：', o:['This is my mother.','This my is mother.','Is this my mother this.'], a:0, h:'按“这是 + 我的 + 妈妈”的顺序排一排。', e:'正确顺序：This is my mother.（这是我的妈妈。）'},
+    {q:'— What colour is it? — （  ）', o:['It\'s green.','It\'s a dog.','I\'m nine.'], a:0, h:'问题问的是 colour（颜色），答案里要有颜色。', e:'问颜色就答颜色：It\'s green.'},
+    {q:'— Who\'s he? — （  ）', o:['He\'s my brother.','She\'s my sister.','It\'s a panda.'], a:0, h:'he 是“他”，指男孩子。', e:'Who\'s he? 问“他是谁”，回答 He\'s my brother.（他是我的哥哥/弟弟。）'}
+   ]}
+  ]
+}
+};
+
+/* =====================================================================
+   C. 存档（localStorage，三科数据各自独立）
+   ===================================================================== */
+const KEY = 'xxtxj_save_v1';
+function blankSubj(){
+  return {role:null, st:Array.from({length:9},()=>({stars:0,frags:0,score:0,pass:false})), wrong:[], poster:false};
+}
+function loadSave(){
+  try{ const s = JSON.parse(localStorage.getItem(KEY)); if(s && s.subj) return s; }catch(e){}
+  return {sound:true, name:'', pick:null, subj:{math:blankSubj(), chinese:blankSubj(), english:blankSubj()}};
+}
+let S = loadSave();
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+
+/* =====================================================================
+   D. 轻柔音效（WebAudio 合成，无需音频文件）
+   ===================================================================== */
+let AC = null;
+function tone(freq, dur, delay, type, vol){
+  if(!S.sound) return;
+  try{
+    if(!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+    if(AC.state === 'suspended') AC.resume();
+    const t = AC.currentTime + (delay||0);
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = type || 'sine'; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(vol || 0.07, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(AC.destination);
+    o.start(t); o.stop(t + dur + 0.05);
+  }catch(e){}
+}
+const SFX = {
+  tap:()=>tone(660,.07,0,'sine',.04),
+  ok: ()=>{tone(523,.15);tone(784,.25,.12)},
+  no: ()=>tone(330,.25,0,'triangle',.05),
+  win:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.28,i*.14))
+};
+function toggleSound(){
+  S.sound = !S.sound; save(); updSnd(); if(S.sound) SFX.tap();
+}
+function updSnd(){ document.getElementById('sndBtn').textContent = S.sound ? '🔊' : '🔇'; }
+
+/* =====================================================================
+   E. 工具函数
+   ===================================================================== */
+const $main = document.getElementById('main');
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+/* 题目文本格式化：保留 emo 标签，转换 [a/b] 为分数 */
+function fmt(s){
+  let h = String(s);
+  // 先临时保护 emoji 标签，其余内容转义，防止 "<" ">" 被当成标签
+  const keep = [];
+  h = h.replace(/<span class="emo">(.*?)<\/span>/g, (m,x)=>{keep.push(x); return '\u0001'+(keep.length-1)+'\u0002';});
+  h = esc(h);
+  h = h.replace(/\u0001(\d+)\u0002/g, (m,i)=>'<span class="emo">'+keep[i]+'</span>');
+  h = h.replace(/\[(\d+)\/(\d+)\]/g, '<span class="fr"><b>$1</b><b>$2</b></span>');
+  return h;
+}
+function plain(s){ return String(s).replace(/<[^>]+>/g,'').replace(/\[(\d+)\/(\d+)\]/g,'$2分之$1'); }
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function rnd(a){ return a[Math.floor(Math.random()*a.length)]; }
+function roleOf(k){ return ROLES[S.subj[k].role || S.pick || 'rabbit']; }
+function tellR(s, k){ return s.replace(/\{R\}/g, roleOf(k).n); }
+function setTop(title, showHome){
+  document.getElementById('ttl').textContent = title;
+  document.getElementById('homeBtn').classList.toggle('hid', !showHome);
+}
+function setColor(k){ document.documentElement.style.setProperty('--main', k ? SUBJECTS[k].color : '#7fb6e3'); }
+function totals(k){
+  const st = S.subj[k].st;
+  return {
+    stars: st.reduce((a,b)=>a+b.stars,0),
+    frags: st.reduce((a,b)=>a+b.frags,0),
+    score: st.reduce((a,b)=>a+b.score,0),
+    badges:st.filter(x=>x.pass).length
+  };
+}
+function allPass(k){ return S.subj[k].st.every(x=>x.pass); }
+
+/* 弹窗 */
+function modal(html){ const m=document.getElementById('modal'); document.getElementById('mbox').innerHTML=html; m.classList.remove('hidden'); }
+function closeModal(){ document.getElementById('modal').classList.add('hidden'); }
+
+/* 顶部“首页”按钮：答题中先确认 */
+let CUR = {screen:'home', k:null};
+function tapHome(){
+  SFX.tap();
+  if(CUR.screen==='quiz'){
+    modal(`<div class="me">${roleOf(CUR.k).e}</div><div class="mt">要离开这一站吗？</div>
+      <div class="muted">本站这次的答题进度不会保存哦。</div>
+      <button class="btn" onclick="closeModal();goMap('${CUR.k}')">回到冒险地图</button>
+      <button class="btn lite" onclick="closeModal();goHome()">回到首页</button>
+      <button class="btn lite" onclick="closeModal()">继续答题</button>`);
+    return;
+  }
+  if(CUR.screen==='map' || CUR.screen==='wrong' || CUR.screen==='gallery' || CUR.screen==='cert'){
+    if(CUR.k && CUR.screen!=='map'){ goMap(CUR.k); return; }
+  }
+  goHome();
+}
+
+/* =====================================================================
+   F. 页面：首页
+   ===================================================================== */
+function goHome(){
+  CUR={screen:'home',k:null}; setColor(null); setTop('小小探险家',false); window.scrollTo(0,0);
+  const prog = Object.keys(SUBJECTS).map(k=>{const t=totals(k);return `${SUBJECTS[k].icon} ${t.badges}/9`}).join('　');
+  $main.innerHTML = `
+    <div class="hero">
+      <div class="big">小小探险家</div>
+      <div class="muted">三年级上册 · 数学 / 语文 / 英语 闯关</div>
+      <div class="roles">🐰🦊🐿️🦉</div>
+    </div>
+    <div class="card center">
+      <div style="font-size:19px">选一位小伙伴，出发去冒险吧！</div>
+      <div class="muted" style="margin-top:4px">我的进度：${prog}</div>
+    </div>
+    <button class="btn" onclick="SFX.tap();goRole()">🚀 开始冒险</button>
+    ${S.pick?`<button class="btn lite" onclick="SFX.tap();goSubjects()">${ROLES[S.pick].e} 继续冒险（${ROLES[S.pick].n}）</button>`:''}
+    <button class="btn lite" onclick="SFX.tap();goGallery(null)">🏅 徽章图鉴</button>
+    ${isStandalone()?'':`<div class="card" style="font-size:16px">📲 <b>家长请看：</b>点 Safari 底部的分享按钮 →「添加到主屏幕」，以后从桌面图标打开，<b>断网也能玩</b>。</div>`}
+    <div class="muted center" style="margin-top:14px">小提示：右上角 🔊 可以一键开关音效</div>`;
+}
+
+/* =====================================================================
+   G. 页面：选择角色（可填写名字，用于奖状）
+   ===================================================================== */
+let tmpRole = null;
+function goRole(){
+  CUR={screen:'role',k:null}; setColor(null); setTop('选择探险伙伴',true); window.scrollTo(0,0);
+  tmpRole = S.pick || 'rabbit';
+  $main.innerHTML = `
+    <h2 class="center">谁陪你去冒险？</h2>
+    <div class="rgrid">${Object.keys(ROLES).map(r=>`
+      <button class="rcard ${r===tmpRole?'on':''}" id="rc_${r}" onclick="pickRole('${r}')">
+        <div class="e">${ROLES[r].e}</div><div class="n">${ROLES[r].n}</div></button>`).join('')}
+    </div>
+    <div class="card">
+      <div style="font-weight:700;margin-bottom:6px">✏️ 写下你的名字（会印在奖状上）</div>
+      <input class="name-in" id="nameIn" maxlength="8" placeholder="例如：小明（可以不填）" value="${esc(S.name||'')}">
+    </div>
+    <button class="btn" onclick="confirmRole()">就选它啦！</button>`;
+}
+function pickRole(r){
+  SFX.tap(); tmpRole=r;
+  document.querySelectorAll('.rcard').forEach(x=>x.classList.remove('on'));
+  document.getElementById('rc_'+r).classList.add('on');
+}
+function confirmRole(){
+  SFX.ok();
+  S.pick = tmpRole;
+  const n = document.getElementById('nameIn').value.trim();
+  S.name = n.slice(0,8); save();
+  if(CUR.back){ const k=CUR.back; S.subj[k].role=tmpRole; save(); goMap(k); return; }
+  goSubjects();
+}
+
+/* =====================================================================
+   H. 页面：选择科目冒险卡片
+   ===================================================================== */
+function goSubjects(){
+  if(!S.pick){ goRole(); return; }
+  CUR={screen:'subjects',k:null}; setColor(null); setTop('选择冒险路线',true); window.scrollTo(0,0);
+  const r = ROLES[S.pick];
+  $main.innerHTML = `
+    <div class="guide"><span class="ava hop">${r.e}</span><div class="bubble">${r.n}：今天想去哪里探险呢？</div></div>
+    ${Object.keys(SUBJECTS).map(k=>{const s=SUBJECTS[k],t=totals(k);return `
+      <button class="scard" style="background:${s.color}" onclick="enterSubject('${k}')">
+        <span class="i">${s.icon}</span>
+        <span><div class="t">${s.name}</div>
+        <div class="p">${k==='math'?'苏教版':k==='chinese'?'人教（统编）版':'人教 PEP 版'} 三年级上册</div>
+        <div class="p">🏅 ${t.badges}/9　⭐ ${t.stars}　${allPass(k)?'🎉 已通关':''}</div></span>
+      </button>`}).join('')}
+    <button class="btn lite" onclick="SFX.tap();goRole()">🔄 更换角色</button>`;
+}
+function enterSubject(k){
+  SFX.tap();
+  const first = !S.subj[k].role;
+  S.subj[k].role = S.pick; save();      // 当前选择的角色记录到该科目（各科独立）
+  goMap(k);
+  if(first){
+    const r = roleOf(k);
+    modal(`<div class="me hop">${r.e}</div><div class="mt">${SUBJECTS[k].icon} ${SUBJECTS[k].name}</div>
+      <div class="story">${esc(tellR(SUBJECTS[k].intro,k))}</div>
+      <button class="btn" onclick="SFX.tap();closeModal()">出发！</button>`);
+  }
+}
+
+/* =====================================================================
+   I. 页面：科目冒险地图（9 个站点，按梯度分三层）
+   ===================================================================== */
+function goMap(k){
+  CUR={screen:'map',k}; setColor(k); setTop(SUBJECTS[k].name,true); window.scrollTo(0,0);
+  const sub=SUBJECTS[k], my=S.subj[k], t=totals(k), r=roleOf(k);
+  let nextIdx = my.st.findIndex(x=>!x.pass);
+  let html = `
+    <div class="card">
+      <div class="guide"><span class="ava">${r.e}</span>
+        <div class="bubble">${allPass(k)?'我们已经通关啦！随时可以回来再练一练～':'跟着我，向下一个站点出发！'}</div></div>
+      <div class="stat" style="margin-top:10px">
+        <div><b>⭐ ${t.stars}</b>星星</div><div><b>🧩 ${t.frags}</b>碎片</div>
+        <div><b>🏅 ${t.badges}</b>徽章</div><div><b>${t.score}</b>总分</div></div>
+    </div>
+    <div class="mini">
+      <button class="btn lite" onclick="SFX.tap();goWrong('${k}')">📒 错题本${my.wrong.length?'('+my.wrong.length+')':''}</button>
+      <button class="btn lite" onclick="SFX.tap();goGallery('${k}')">🏅 图鉴</button>
+      <button class="btn lite" onclick="SFX.tap();changeRoleFor('${k}')">🔄 换角色</button>
+    </div>
+    ${allPass(k)?`<button class="btn gold" onclick="SFX.tap();showPoster('${k}')">🎉 通关海报 & 奖状</button>`:''}`;
+  sub.stations.forEach((st,i)=>{
+    if(i%3===0) html += `<div class="tier">${TIERS[st.tier]}</div>`;
+    const rec=my.st[i], open = i===0 || my.st[i-1].pass;
+    const cls = !open?'lock':(i===nextIdx?'next':'');
+    html += `<button class="station ${cls}" onclick="tapStation('${k}',${i})">
+      <span class="num">${i+1}</span>
+      <span><div class="nm">${st.name}</div><div class="ds">${st.desc}</div>
+      <div class="ds">${rec.pass?('最好成绩 ⭐'+rec.stars+' 🧩'+rec.frags):(open?'过关条件：⭐'+PASS_STAR+' + 🧩'+PASS_FRAG:'通过上一站后解锁')}</div></span>
+      <span class="rt">${!open?'🔒':(rec.pass?st.badge[0]:(i===nextIdx?r.e:'▶️'))}</span></button>`;
+  });
+  $main.innerHTML = html;
+}
+function changeRoleFor(k){ goRole(); CUR.back=k; tmpRole=S.subj[k].role||S.pick; pickRole(tmpRole); }
+function tapStation(k,i){
+  const my=S.subj[k];
+  if(i>0 && !my.st[i-1].pass){
+    SFX.no();
+    modal(`<div class="me">🔒</div><div class="mt">这一站还没开放</div>
+      <div class="muted">先通过第 ${i} 站「${SUBJECTS[k].stations[i-1].name}」才能来这里哦！</div>
+      <button class="btn" onclick="closeModal()">好的</button>`);
+    return;
+  }
+  SFX.tap();
+  const st=SUBJECTS[k].stations[i], r=roleOf(k);
+  // 切换站点时弹出简短剧情
+  modal(`<div class="me hop">${r.e}</div><div class="mt">第 ${i+1} 站 · ${st.name}</div>
+    <div class="muted">${TIERS[st.tier]}　${st.desc}</div>
+    <div class="story" style="margin-top:8px">${esc(st.story)}</div>
+    <button class="btn" onclick="closeModal();startStation('${k}',${i})">开始闯关！</button>
+    <button class="btn lite" onclick="closeModal()">再等等</button>`);
+}
+
+/* =====================================================================
+   J. 答题流程
+   R：本次闯关的临时状态
+   ===================================================================== */
+let R = null;
+function startStation(k,i){
+  R = {k, i, qi:0, stars:0, frags:0, score:0, tries:0, input:'', bad:[], order:null};
+  CUR={screen:'quiz',k}; setTop(SUBJECTS[k].stations[i].name,true);
+  prepQ(); renderQ();
+}
+function curQ(){ return SUBJECTS[R.k].stations[R.i].qs[R.qi]; }
+function prepQ(){
+  const q=curQ(); R.tries=0; R.input=''; R.bad=[];
+  if(q.o){ const idx=q.o.map((_,j)=>j); R.order = q.ns ? idx : shuffle(idx); }
+}
+function vert(v){
+  return `<div class="vt"><div>${esc(v[0])}</div><div><span class="op">${esc(v[1])}</span>${esc(v[2])}</div><div class="ln"></div><div class="qm">?</div></div>`;
+}
+function renderQ(){
+  window.scrollTo(0,0);
+  const st=SUBJECTS[R.k].stations[R.i], q=curQ(), n=st.qs.length, r=roleOf(R.k);
+  let h = `
+    <div class="qhead"><span>${TIERS[st.tier]}</span><span>第 ${R.qi+1}/${n} 题</span><span>⭐${R.stars} 🧩${R.frags}</span></div>
+    <div class="bar"><i style="width:${R.qi/n*100}%"></i></div>
+    <div class="guide"><span class="ava">${r.e}</span><div class="bubble">${R.tries?'再仔细想一想，你可以的！':rnd(['认真读题，你一定行！','慢慢想，不着急～','我相信你！'])}</div></div>
+    <div class="qcard">
+      ${st.p?`<div class="passage">${esc(st.p)}</div>`:''}
+      <div class="qtext">${fmt(q.q)}</div>${q.v?vert(q.v):''}
+    </div>`;
+  if(q.t==='i'){
+    // 数字键盘填空题
+    h += `<div class="ansbox" id="ansBox"></div>
+      <div class="pad">${[1,2,3,4,5,6,7,8,9].map(d=>`<button onclick="key('${d}')">${d}</button>`).join('')}
+        <button onclick="key('C')" style="font-size:20px">清空</button>
+        <button onclick="key('0')">0</button>
+        <button onclick="key('B')">⌫</button></div>
+      <button class="btn" onclick="submitInput()">✅ 确定</button>`;
+  }else{
+    h += R.order.map(j=>`<button class="opt ${R.bad.includes(j)?'bad':''}" ${R.bad.includes(j)?'disabled':''} onclick="pickOpt(${j})">${fmt(q.o[j])}</button>`).join('');
+  }
+  $main.innerHTML = h;
+  if(q.t==='i') drawAns();
+}
+function drawAns(){
+  const q=curQ(), b=document.getElementById('ansBox');
+  b.innerHTML = R.input ? esc(R.input)+(q.u?`<span class="unit">${esc(q.u)}</span>`:'') : '<span class="ph">点下面的数字输入答案</span>';
+}
+function key(d){
+  SFX.tap();
+  if(d==='B') R.input=R.input.slice(0,-1);
+  else if(d==='C') R.input='';
+  else if(R.input.length<6) R.input = (R.input==='0'?'':R.input)+d;
+  drawAns();
+}
+function submitInput(){
+  if(!R.input){ SFX.no(); return; }
+  const q=curQ();
+  judge(String(Number(R.input))===String(Number(q.a)), R.input+(q.u||''));
+}
+function pickOpt(j){ const q=curQ(); judge(j===q.a, q.o[j], j); }
+
+/* 判题：答对 → 开心动画 + 星星/碎片；答错 → 鼓励 + 提示，可重试；连错 3 次显示解析 */
+function judge(ok, yours, optIdx){
+  const q=curQ(), r=roleOf(R.k);
+  if(ok){
+    SFX.ok();
+    const first = R.tries===0;
+    if(first){ R.stars++; R.score+=10; } else { R.score+=5; }
+    R.frags++;
+    modal(`<div class="me hop">${r.e}</div><div class="mt">${rnd(CHEER_OK)}</div>
+      <div class="gain">${first?'⭐ +1　🧩 +1':'🧩 +1'}</div>
+      ${first?'':'<div class="muted">改正了错误，也很了不起！</div>'}
+      <button class="btn" onclick="SFX.tap();closeModal();nextQ()">${R.qi+1<SUBJECTS[R.k].stations[R.i].qs.length?'下一题 ➜':'看看成绩 ➜'}</button>`);
+  }else{
+    SFX.no();
+    R.tries++;
+    addWrong(q, yours);
+    if(optIdx!==undefined) R.bad.push(optIdx);
+    if(R.tries>=3){
+      const ans = q.t==='i' ? q.a+(q.u||'') : q.o[q.a];
+      modal(`<div class="me">${r.e}</div><div class="mt">我们一起来看看解析吧</div>
+        <div class="reveal">✅ 正确答案：<b>${fmt(ans)}</b><br>📖 ${fmt(q.e)}</div>
+        <div class="muted">这道题已经放进错题本，以后可以再复习哦！</div>
+        <button class="btn" onclick="SFX.tap();closeModal();nextQ()">我明白了，继续 ➜</button>`);
+    }else{
+      modal(`<div class="me shake">${r.e}</div><div class="mt">${rnd(CHEER_NO)}</div>
+        <div class="hint">💡 小提示：${fmt(q.h)}</div>
+        <button class="btn" onclick="SFX.tap();closeModal();R.input='';renderQ()">再试一次</button>`);
+    }
+  }
+}
+function nextQ(){
+  R.qi++;
+  if(R.qi >= SUBJECTS[R.k].stations[R.i].qs.length){ endStation(); return; }
+  prepQ(); renderQ();
+}
+
+/* 站点结算：达标解锁下一关 + 颁发徽章 */
+function endStation(){
+  const k=R.k, i=R.i, st=SUBJECTS[k].stations[i], rec=S.subj[k].st[i], r=roleOf(k);
+  const pass = R.stars>=PASS_STAR && R.frags>=PASS_FRAG;
+  const firstPass = pass && !rec.pass;
+  rec.stars=Math.max(rec.stars,R.stars); rec.frags=Math.max(rec.frags,R.frags); rec.score=Math.max(rec.score,R.score);
+  if(pass) rec.pass=true;
+  save();
+  CUR={screen:'map',k};
+  const done = allPass(k);
+  if(pass){
+    SFX.win();
+    const isLast = i===8;
+    modal(`<div class="me hop">${r.e}</div><div class="mt">🎉 闯关成功！</div>
+      <div class="gain">⭐ ${R.stars}　🧩 ${R.frags}　得分 ${R.score}</div>
+      ${firstPass?`<div class="badge" style="margin:12px auto;width:140px"><div class="bi">${st.badge[0]}</div><div class="bn">获得徽章<br>「${st.badge[1]}」</div></div>`:''}
+      ${firstPass && !isLast?`<div class="story">${esc(SUBJECTS[k].stations[i+1].story)}</div>`:''}
+      ${done && firstPass?`<button class="btn gold" onclick="closeModal();goMap('${k}');showPoster('${k}')">🏆 查看通关海报</button>`:''}
+      ${!isLast?`<button class="btn" onclick="closeModal();goMap('${k}');tapStation('${k}',${i+1})">前往下一站 ➜</button>`:''}
+      <button class="btn lite" onclick="closeModal();goMap('${k}')">返回冒险地图</button>`);
+  }else{
+    modal(`<div class="me">${r.e}</div><div class="mt">还差一点点就过关啦！</div>
+      <div class="muted">过关需要 ⭐${PASS_STAR} + 🧩${PASS_FRAG}<br>这次获得 ⭐${R.stars} 🧩${R.frags}</div>
+      <div class="hint">💡 第一次就答对才能得到星星，先去错题本看看解析，再来挑战吧！</div>
+      <button class="btn" onclick="closeModal();startStation('${k}',${i})">再挑战一次</button>
+      <button class="btn lite" onclick="closeModal();goWrong('${k}')">去看错题本</button>
+      <button class="btn lite" onclick="closeModal();goMap('${k}')">返回冒险地图</button>`);
+  }
+  goMap(k);
+}
+
+/* =====================================================================
+   K. 错题本（按科目独立）
+   ===================================================================== */
+function addWrong(q, yours){
+  const my=S.subj[R.k], key=R.i+'-'+R.qi, st=SUBJECTS[R.k].stations[R.i];
+  const ans = q.t==='i' ? q.a+(q.u||'') : q.o[q.a];
+  const item = {key, st:st.name, q:q.q, p:st.p||'', yours:String(yours), ans, e:q.e, n:1};
+  const old = my.wrong.findIndex(w=>w.key===key);
+  if(old>=0){ item.n = (my.wrong[old].n||1)+1; my.wrong.splice(old,1); }
+  my.wrong.unshift(item);
+  save();
+}
+function goWrong(k){
+  CUR={screen:'wrong',k}; setColor(k); setTop('📒 错题本',true); window.scrollTo(0,0);
+  const list=S.subj[k].wrong;
+  let h = `<div class="card center"><b>${SUBJECTS[k].icon} ${SUBJECTS[k].name}</b><div class="muted">共 ${list.length} 道错题，看懂解析再去挑战吧！</div></div>`;
+  if(!list.length) h += `<div class="card center"><div style="font-size:50px">🌟</div>还没有错题，真棒！</div>`;
+  list.forEach((w,idx)=>{
+    h += `<div class="wrong"><div class="muted">📍 ${esc(w.st)}　错过 ${w.n||1} 次</div>
+      ${w.p?`<div class="passage" style="font-size:16px">${esc(w.p)}</div>`:''}
+      <div class="wq">${fmt(w.q)}</div>
+      <div class="wy">✘ 我的答案：${fmt(w.yours)}</div>
+      <div class="wa">✔ 正确答案：${fmt(w.ans)}</div>
+      <div class="we">📖 ${fmt(w.e)}</div>
+      <button class="btn lite" style="min-height:46px;font-size:17px" onclick="delWrong('${k}',${idx})">我已掌握，移出错题本</button></div>`;
+  });
+  if(list.length) h += `<button class="btn lite" onclick="clearWrong('${k}')">🧹 清空错题本</button>`;
+  h += `<button class="btn" onclick="SFX.tap();goMap('${k}')">返回冒险地图</button>`;
+  $main.innerHTML = h;
+}
+function delWrong(k,idx){ SFX.tap(); S.subj[k].wrong.splice(idx,1); save(); goWrong(k); }
+function clearWrong(k){
+  modal(`<div class="mt">确定清空错题本吗？</div>
+    <button class="btn" onclick="S.subj['${k}'].wrong=[];save();closeModal();goWrong('${k}')">确定清空</button>
+    <button class="btn lite" onclick="closeModal()">取消</button>`);
+}
+
+/* =====================================================================
+   L. 徽章图鉴（k=null 时显示三科全部）
+   ===================================================================== */
+function goGallery(k){
+  CUR={screen:'gallery',k}; setColor(k); setTop('🏅 徽章图鉴',true); window.scrollTo(0,0);
+  const keys = k ? [k] : Object.keys(SUBJECTS);
+  let h='';
+  keys.forEach(kk=>{
+    const s=SUBJECTS[kk], my=S.subj[kk], t=totals(kk);
+    h += `<div class="card"><div style="font-weight:800;font-size:20px">${s.icon} ${s.name}　<span class="muted">${t.badges}/9</span></div>
+      <div class="bgrid">${s.stations.map((st,i)=>{const on=my.st[i].pass;return `
+        <div class="badge ${on?'':'off'}"><div class="bi">${on?st.badge[0]:'❔'}</div><div class="bn">${on?st.badge[1]:st.name}</div></div>`}).join('')}</div>
+      ${allPass(kk)?`<button class="btn gold" onclick="SFX.tap();goCert('${kk}')">📜 查看奖状</button>`:''}</div>`;
+  });
+  h += `<button class="btn" onclick="SFX.tap();${k?`goMap('${k}')`:'goHome()'}">返回</button>`;
+  $main.innerHTML = h;
+}
+
+/* =====================================================================
+   M. 通关海报（弹窗）
+   ===================================================================== */
+function showPoster(k){
+  SFX.win();
+  const s=SUBJECTS[k], r=roleOf(k), t=totals(k);
+  S.subj[k].poster=true; save();
+  modal(`<div style="background:${s.color};border-radius:20px;padding:14px;color:#fff">
+      <div style="font-size:18px;font-weight:700">🏆 通关海报 🏆</div>
+      <div class="me hop">${r.e}</div>
+      <div class="mt">${esc(S.name||r.n)} 通关了${s.name}！</div>
+      <div style="font-size:20px;font-weight:700">⭐ ${t.stars}　🧩 ${t.frags}　🏅 9/9</div></div>
+    <div class="story" style="margin-top:10px">${esc(s.ending)}</div>
+    <div class="bgrid">${s.stations.map(st=>`<div class="badge"><div class="bi">${st.badge[0]}</div><div class="bn">${st.badge[1]}</div></div>`).join('')}</div>
+    <button class="btn gold" onclick="closeModal();goCert('${k}')">📜 领取电子奖状</button>
+    <button class="btn lite" onclick="closeModal();goGallery('${k}')">🏅 打开图鉴</button>
+    <button class="btn lite" onclick="closeModal()">关闭</button>`);
+}
+
+/* =====================================================================
+   N. 电子奖状：Canvas 绘制成图片 → 长按保存 / 打印
+   ===================================================================== */
+function rr(x,X,Y,W,H,R){ x.beginPath();x.moveTo(X+R,Y);x.lineTo(X+W-R,Y);x.quadraticCurveTo(X+W,Y,X+W,Y+R);x.lineTo(X+W,Y+H-R);x.quadraticCurveTo(X+W,Y+H,X+W-R,Y+H);x.lineTo(X+R,Y+H);x.quadraticCurveTo(X,Y+H,X,Y+H-R);x.lineTo(X,Y+R);x.quadraticCurveTo(X,Y,X+R,Y);x.closePath(); }
+function wrapText(x, text, X, Y, maxW, lh){
+  let line='', y=Y;
+  for(const ch of text){
+    if(x.measureText(line+ch).width > maxW){ x.fillText(line, X, y); line=ch; y+=lh; }
+    else line+=ch;
+  }
+  if(line) x.fillText(line, X, y);
+  return y;
+}
+function drawCert(k){
+  const s=SUBJECTS[k], r=roleOf(k), t=totals(k);
+  const W=900, H=1240, c=document.createElement('canvas'); c.width=W; c.height=H;
+  const x=c.getContext('2d');
+  const F='"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif';
+  // 背景与双边框
+  x.fillStyle='#fffaf0'; x.fillRect(0,0,W,H);
+  x.lineWidth=14; x.strokeStyle=s.color; rr(x,24,24,W-48,H-48,36); x.stroke();
+  x.lineWidth=4; x.strokeStyle='#e8c56a'; rr(x,50,50,W-100,H-100,26); x.stroke();
+  // 四角小星星
+  x.font='48px '+F; x.textAlign='center'; x.textBaseline='middle';
+  [[95,95],[W-95,95],[95,H-95],[W-95,H-95]].forEach(p=>x.fillText('⭐',p[0],p[1]));
+  // 标题
+  x.fillStyle='#c0503a'; x.font='bold 112px '+F; x.fillText('奖　状',W/2,190);
+  x.fillStyle='#8a7d70'; x.font='30px '+F; x.fillText('— 小小探险家 · 三年级上册 —',W/2,280);
+  // 角色
+  x.font='170px '+F; x.fillText(r.e,W/2,440);
+  x.fillStyle='#4a4036'; x.font='bold 34px '+F; x.fillText('探险伙伴：'+r.n,W/2,570);
+  // 正文
+  x.textAlign='left'; x.textBaseline='alphabetic';
+  x.font='bold 46px '+F; x.fillText((S.name||'小小探险家')+' 小朋友：',110,670);
+  x.font='38px '+F;
+  const body='　　你在「'+s.name+'」冒险中勇闯 9 个站点，共获得 '+t.stars+' 颗星星、'+t.frags+' 枚探险碎片，集齐全部 9 枚徽章，表现非常出色！特发此状，以资鼓励！';
+  wrapText(x, body, 110, 750, W-220, 64);
+  // 徽章一排
+  x.textAlign='center'; x.font='52px '+F;
+  s.stations.forEach((st,i)=>x.fillText(st.badge[0], 150+i*75, 1000));
+  // 落款与日期
+  const d=new Date();
+  x.fillStyle='#4a4036'; x.font='34px '+F; x.textAlign='right';
+  x.fillText(s.name+' 探险委员会',W-110,1090);
+  x.fillText(d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日',W-110,1140);
+  // 印章
+  x.strokeStyle='rgba(205,70,55,.85)'; x.lineWidth=6;
+  x.beginPath(); x.arc(200,1100,72,0,Math.PI*2); x.stroke();
+  x.fillStyle='rgba(205,70,55,.85)'; x.textAlign='center'; x.font='bold 30px '+F;
+  x.fillText('通关',200,1092); x.fillText('认证',200,1130);
+  return c.toDataURL('image/png');
+}
+function goCert(k){
+  if(!allPass(k)){ goMap(k); return; }
+  CUR={screen:'cert',k}; setColor(k); setTop('📜 电子奖状',true); window.scrollTo(0,0);
+  $main.innerHTML = `<div class="muted center" style="margin-bottom:8px">正在制作奖状…</div>`;
+  setTimeout(()=>{
+    $main.innerHTML = `
+      <img id="certImg" src="${drawCert(k)}" alt="奖状">
+      <div class="muted center" style="margin:10px 0">📱 长按奖状图片 →“存储到照片”即可保存<br>如果打印按钮没有反应：先保存图片，再到“照片”里分享 →“打印”</div>
+      <button class="btn gold" onclick="SFX.tap();window.print()">🖨️ 打印奖状</button>
+      <button class="btn lite" onclick="SFX.tap();goGallery('${k}')">🏅 查看图鉴</button>
+      <button class="btn" onclick="SFX.tap();goMap('${k}')">返回冒险地图</button>`;
+  },60);
+}
+
+/* =====================================================================
+   O. 启动
+   ===================================================================== */
+/* =====================================================================
+   P. 离线运行：注册 Service Worker（file:// 直接打开时自动跳过）
+   ===================================================================== */
+function isStandalone(){ return window.navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches); }
+if('serviceWorker' in navigator && location.protocol.indexOf('http') === 0){
+  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
+}
+
+updSnd();
+goHome();
+</script>
+</body>
+</html>
